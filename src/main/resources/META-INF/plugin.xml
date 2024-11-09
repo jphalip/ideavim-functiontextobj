@@ -1,0 +1,10 @@
+<idea-plugin>
+    <vendor email="jphalip@gmail.com" url="https://github.com/jphalip">Julien Phalip</vendor>
+
+    <extensions defaultExtensionNs="IdeaVIM">
+        <vimExtension implementation="com.julienphalip.ideavim.functiontextobj.FunctionTextObj"/>
+    </extensions>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>IdeaVIM</depends>
+</idea-plugin>
