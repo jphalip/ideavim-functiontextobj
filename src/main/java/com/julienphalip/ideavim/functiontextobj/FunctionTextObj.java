@@ -13,7 +13,6 @@ import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.maddyhome.idea.vim.VimPlugin;
 import com.maddyhome.idea.vim.api.ExecutionContext;
 import com.maddyhome.idea.vim.api.VimEditor;
 import com.maddyhome.idea.vim.api.VimInjectorKt;
@@ -23,31 +22,15 @@ import com.maddyhome.idea.vim.extension.ExtensionHandler;
 import com.maddyhome.idea.vim.extension.VimExtension;
 import com.maddyhome.idea.vim.state.mode.Mode;
 import com.maddyhome.idea.vim.state.mode.SelectionType;
-import com.maddyhome.idea.vim.vimscript.model.datatypes.VimString;
 import java.awt.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FunctionTextObj implements VimExtension {
 
-    public static final String DEFAULT_FUNCTION_TEXT_OBJECT_CHAR = "f";
-    public static final String FUNCTION_TEXT_OBJECT_CHAR_VARIABLE = "function_text_object_char";
-
     @Override
     public @NotNull String getName() {
         return "functiontextobj";
-    }
-
-    private @NotNull String getFunctionTextObjectChar() {
-        final Object value =
-                VimPlugin.getVariableService()
-                        .getGlobalVariableValue(FUNCTION_TEXT_OBJECT_CHAR_VARIABLE);
-        if (value instanceof VimString vimValue) {
-            if (vimValue.getValue().length() == 1) {
-                return vimValue.getValue();
-            }
-        }
-        return DEFAULT_FUNCTION_TEXT_OBJECT_CHAR;
     }
 
     @Override
@@ -67,24 +50,22 @@ public class FunctionTextObj implements VimExtension {
                 false);
 
         // Map the default key bindings to the <Plug> mappings
-        String character = getFunctionTextObjectChar();
         putKeyMappingIfMissing(
                 MappingMode.XO,
-                VimInjectorKt.getInjector().getParser().parseKeys("i" + character),
+                VimInjectorKt.getInjector().getParser().parseKeys("if"),
                 getOwner(),
                 VimInjectorKt.getInjector().getParser().parseKeys("<Plug>InnerFunction"),
                 true);
         putKeyMappingIfMissing(
                 MappingMode.XO,
-                VimInjectorKt.getInjector().getParser().parseKeys("a" + character),
+                VimInjectorKt.getInjector().getParser().parseKeys("af"),
                 getOwner(),
                 VimInjectorKt.getInjector().getParser().parseKeys("<Plug>OuterFunction"),
                 true);
     }
 
     private static Editor getEditor() {
-        Window mostRecentFocusedWindow =
-            WindowManager.getInstance().getMostRecentFocusedWindow();
+        Window mostRecentFocusedWindow = WindowManager.getInstance().getMostRecentFocusedWindow();
         if (!(mostRecentFocusedWindow instanceof IdeFrame activeFrame)) return null;
         if (activeFrame.getProject() == null) return null;
         return FileEditorManager.getInstance(activeFrame.getProject()).getSelectedTextEditor();
@@ -113,12 +94,16 @@ public class FunctionTextObj implements VimExtension {
             int endOffset = method.getTextRange().getEndOffset();
 
             if (!around) {
-                // For inner function, try to find the body element
                 PsiElement body = findFunctionBody(method);
                 if (body != null) {
-                    startOffset =
-                            body.getTextRange().getStartOffset() + 1; // +1 to skip opening brace
-                    endOffset = body.getTextRange().getEndOffset() - 1; // -1 to skip closing brace
+                    startOffset = body.getTextRange().getStartOffset();
+                    endOffset = body.getTextRange().getEndOffset();
+                    if (hasBraces(
+                            body.getClass().getName(),
+                            body.getNode().getElementType().toString())) {
+                        startOffset += 1;
+                        endOffset -= 1;
+                    }
                 }
             }
 
@@ -129,6 +114,37 @@ public class FunctionTextObj implements VimExtension {
 
             // Update Vim mode to visual character-wise mode
             vimEditor.setMode(new Mode.VISUAL(SelectionType.CHARACTER_WISE, null));
+        }
+
+        private boolean hasBraces(String className, String elementType) {
+            // JVM languages
+            if (className.equals("com.intellij.psi.impl.source.tree.java.PsiCodeBlockImpl")
+                    || (className.contains(".kotlin.") && elementType.equals("BLOCK"))
+                    || (className.contains(".scala.") && elementType.contains("BLOCK"))) {
+                return true;
+            }
+
+            // Web languages
+            if ((className.contains(".javascript.") && elementType.equals("BLOCK_STATEMENT"))
+                    || (className.contains(".php.") && elementType.equals("Group Statement"))) {
+                return true;
+            }
+
+            // Systems programming
+            if ((className.contains(".goide.") && elementType.equals("BLOCK"))
+                    || (className.contains(".cpp.") && elementType.contains("COMPOUND_STATEMENT"))
+                    || (className.contains(".rust.") && elementType.contains("BLOCK_EXPR"))) {
+                return true;
+            }
+
+            // Mobile/Apps
+            if ((className.contains(".swift.") && elementType.contains("BLOCK"))
+                    || (className.contains(".dart.") && elementType.contains("BLOCK"))) {
+                return true;
+            }
+
+            // Microsoft
+            return className.contains(".dotnet.") && elementType.contains("BLOCK");
         }
 
         @Nullable
@@ -164,7 +180,9 @@ public class FunctionTextObj implements VimExtension {
             // Try to find the function body among the children
             for (PsiElement child : function.getChildren()) {
                 String elementType = child.getNode().getElementType().toString();
-                if (elementType.contains("BLOCK") || elementType.contains("BODY")) {
+                if (elementType.contains("BLOCK")
+                        || elementType.contains("BODY")
+                        || elementType.equals("Py:STATEMENT_LIST")) {
                     return child;
                 }
             }
