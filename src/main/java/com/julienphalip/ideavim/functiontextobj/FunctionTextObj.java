@@ -98,9 +98,7 @@ public class FunctionTextObj implements VimExtension {
                 if (body != null) {
                     startOffset = body.getTextRange().getStartOffset();
                     endOffset = body.getTextRange().getEndOffset();
-                    if (hasBraces(
-                            body.getClass().getName(),
-                            body.getNode().getElementType().toString())) {
+                    if (usesBraces(body)) {
                         startOffset += 1;
                         endOffset -= 1;
                     }
@@ -116,35 +114,21 @@ public class FunctionTextObj implements VimExtension {
             vimEditor.setMode(new Mode.VISUAL(SelectionType.CHARACTER_WISE, null));
         }
 
-        private boolean hasBraces(String className, String elementType) {
-            // JVM languages
-            if (className.equals("com.intellij.psi.impl.source.tree.java.PsiCodeBlockImpl")
-                    || (className.contains(".kotlin.") && elementType.equals("BLOCK"))
-                    || (className.contains(".scala.") && elementType.contains("BLOCK"))) {
-                return true;
-            }
-
-            // Web languages
-            if ((className.contains(".javascript.") && elementType.equals("BLOCK_STATEMENT"))
-                    || (className.contains(".php.") && elementType.equals("Group Statement"))) {
-                return true;
-            }
-
-            // Systems programming
-            if ((className.contains(".goide.") && elementType.equals("BLOCK"))
-                    || (className.contains(".cpp.") && elementType.contains("COMPOUND_STATEMENT"))
-                    || (className.contains(".rust.") && elementType.contains("BLOCK_EXPR"))) {
-                return true;
-            }
-
-            // Mobile/Apps
-            if ((className.contains(".swift.") && elementType.contains("BLOCK"))
-                    || (className.contains(".dart.") && elementType.contains("BLOCK"))) {
-                return true;
-            }
-
-            // Microsoft
-            return className.contains(".dotnet.") && elementType.contains("BLOCK");
+        private boolean usesBraces(PsiElement element) {
+            return (element.getLanguage().getID().equalsIgnoreCase("C#")
+                    || element.getLanguage().getID().equalsIgnoreCase("Scala")
+                    || element.getLanguage().getID().equalsIgnoreCase("Dart")
+                    || element.getLanguage().getID().equalsIgnoreCase("Go")
+                    || element.getLanguage().getID().equalsIgnoreCase("Java")
+                    || element.getLanguage().getID().equalsIgnoreCase("Kotlin")
+                    || element.getLanguage().getID().equalsIgnoreCase("PHP")
+                    || element.getLanguage().getID().equalsIgnoreCase("Perl5")
+                    || element.getLanguage().getID().equalsIgnoreCase("Python")
+                    || element.getLanguage().getID().equalsIgnoreCase("R")
+                    || element.getLanguage().getID().equalsIgnoreCase("Rust")
+                    || element.getLanguage().getID().equalsIgnoreCase("TypeScript")
+                    || element.getLanguage().getID().equalsIgnoreCase("JavaScript")
+                    || element.getLanguage().getID().equalsIgnoreCase("ECMAScript 6"));
         }
 
         @Nullable
@@ -156,16 +140,28 @@ public class FunctionTextObj implements VimExtension {
             if (element == null) return null;
 
             // Walk up the PSI tree to find a function-like element
-            element =
-                    element.getParent(); // Start with parent since findElementAt usually returns a
-            // leaf
+            // Start with parent since findElementAt usually returns a leaf
+            element = element.getParent();
             while (element != null) {
+                if (element.getNode() == null) {
+                    break;
+                }
+
                 String elementType = element.getNode().getElementType().toString().toUpperCase();
 
                 // Specifically look for method/function declarations
-                if (elementType.endsWith("FUNCTION_DECLARATION")
-                        || elementType.equals("METHOD")
-                        || elementType.equals("FUN")) {
+                if (elementType.endsWith("METHOD-DECLARATION") // C#
+                        || elementType.startsWith("FUNCTION_DECLARATION") // Go, Dart
+                        || elementType.endsWith("FUNCTION_DECLARATION") // Javascript, Python, Go
+                        || elementType.equals("SUB_DEFINITION") // Perl
+                        || elementType.equals("RUBY:METHOD") // Ruby
+                        || elementType.equals("METHOD") // Java
+                        || elementType.equals("FUN") // Kotlin
+                        || elementType.equals("JS:TYPESCRIPT_FUNCTION") // Typescript
+                        || elementType.endsWith("FUNCTION DEFINITION") // Scala
+                        || elementType.endsWith("FUNCTION") // PHP
+                        || elementType.endsWith("R_FUNCTION_EXPRESSION") // R
+                ) {
                     return element;
                 }
 
@@ -179,10 +175,19 @@ public class FunctionTextObj implements VimExtension {
         private PsiElement findFunctionBody(PsiElement function) {
             // Try to find the function body among the children
             for (PsiElement child : function.getChildren()) {
-                String elementType = child.getNode().getElementType().toString();
-                if (elementType.contains("BLOCK")
-                        || elementType.contains("BODY")
-                        || elementType.equals("Py:STATEMENT_LIST")) {
+                String elementType = child.getNode().getElementType().toString().toUpperCase();
+                if (elementType.equals("CODE_BLOCK") // Java
+                        || elementType.equals("CS:BLOCK-LIST") // C#
+                        || elementType.equals("FUNCTION_BODY") // Dart
+                        || elementType.equals("BLOCK") // Kotlin, Rust
+                        || elementType.equals("GROUP STATEMENT") // PHP
+                        || elementType.equals("BLOCK OF EXPRESSIONS") // Scala
+                        || elementType.equals("BLOCK_STATEMENT") // Typescript, Javascript
+                        || elementType.equals("PERL5: BLOCK") // Perl
+                        || elementType.equals("PY:STATEMENT_LIST") // Python
+                        || elementType.equals("BODY STATEMENT") // Ruby
+                        || elementType.equals("R_BLOCK_EXPRESSION") // R
+                ) {
                     return child;
                 }
             }
