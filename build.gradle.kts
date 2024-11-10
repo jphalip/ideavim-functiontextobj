@@ -51,7 +51,7 @@ val runRiderWithPlugins by intellijPlatformTesting.runIde.registering {
 
 val runIdeaUltimateWithPlugins by intellijPlatformTesting.runIde.registering {
     type = IntelliJPlatformType.IntellijIdeaUltimate
-    version = "2024.2.1"
+    version = "2024.2.4"
     plugins {
         plugin("org.jetbrains.plugins.go", "242.20224.300")
         plugin("Pythonid", "242.20224.419")
