@@ -123,7 +123,6 @@ public class FunctionTextObj implements VimExtension {
                     || element.getLanguage().getID().equalsIgnoreCase("Kotlin")
                     || element.getLanguage().getID().equalsIgnoreCase("PHP")
                     || element.getLanguage().getID().equalsIgnoreCase("Perl5")
-                    || element.getLanguage().getID().equalsIgnoreCase("Python")
                     || element.getLanguage().getID().equalsIgnoreCase("R")
                     || element.getLanguage().getID().equalsIgnoreCase("Rust")
                     || element.getLanguage().getID().equalsIgnoreCase("TypeScript")
