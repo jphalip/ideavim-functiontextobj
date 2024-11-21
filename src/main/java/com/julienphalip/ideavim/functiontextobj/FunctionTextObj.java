@@ -6,10 +6,7 @@ import static com.maddyhome.idea.vim.extension.VimExtensionFacade.putKeyMappingI
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.SelectionModel;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.IdeFrame;
-import com.intellij.openapi.wm.WindowManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -20,9 +17,9 @@ import com.maddyhome.idea.vim.command.MappingMode;
 import com.maddyhome.idea.vim.command.OperatorArguments;
 import com.maddyhome.idea.vim.extension.ExtensionHandler;
 import com.maddyhome.idea.vim.extension.VimExtension;
+import com.maddyhome.idea.vim.newapi.IjVimEditorKt;
 import com.maddyhome.idea.vim.state.mode.Mode;
 import com.maddyhome.idea.vim.state.mode.SelectionType;
-import java.awt.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,13 +61,6 @@ public class FunctionTextObj implements VimExtension {
                 true);
     }
 
-    private static Editor getEditor() {
-        Window mostRecentFocusedWindow = WindowManager.getInstance().getMostRecentFocusedWindow();
-        if (!(mostRecentFocusedWindow instanceof IdeFrame activeFrame)) return null;
-        if (activeFrame.getProject() == null) return null;
-        return FileEditorManager.getInstance(activeFrame.getProject()).getSelectedTextEditor();
-    }
-
     private record FunctionHandler(boolean around) implements ExtensionHandler {
 
         @Override
@@ -78,8 +68,8 @@ public class FunctionTextObj implements VimExtension {
                 @NotNull VimEditor vimEditor,
                 @NotNull ExecutionContext context,
                 @NotNull OperatorArguments operatorArguments) {
-            Editor editor = getEditor();
-            if (editor == null || editor.getProject() == null) return;
+            Editor editor = IjVimEditorKt.getIj(vimEditor);
+            if (editor.getProject() == null) return;
             VirtualFile file = FileDocumentManager.getInstance().getFile(editor.getDocument());
             if (file == null) return;
             PsiFile psiFile = PsiManager.getInstance(editor.getProject()).findFile(file);
