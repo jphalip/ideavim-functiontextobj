@@ -101,7 +101,7 @@ public class FunctionTextObj implements VimExtension {
             editor.getCaretModel().moveToOffset(endOffset);
 
             // Update Vim mode to visual character-wise mode
-            vimEditor.setMode(new Mode.VISUAL(SelectionType.CHARACTER_WISE, null));
+            vimEditor.setMode(new Mode.VISUAL(SelectionType.CHARACTER_WISE, new Mode.NORMAL()));
         }
 
         private boolean usesBraces(PsiElement element) {
