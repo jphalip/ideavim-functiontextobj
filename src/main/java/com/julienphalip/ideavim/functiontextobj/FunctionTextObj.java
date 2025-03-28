@@ -149,6 +149,7 @@ public class FunctionTextObj implements VimExtension {
                         || elementType.equals("JS:TYPESCRIPT_FUNCTION") // Typescript
                         || elementType.endsWith("FUNCTION DEFINITION") // Scala
                         || elementType.endsWith("FUNCTION") // PHP
+                        || elementType.equals("CLASS_METHOD") // PHP
                         || elementType.endsWith("R_FUNCTION_EXPRESSION") // R
                 ) {
                     return element;
