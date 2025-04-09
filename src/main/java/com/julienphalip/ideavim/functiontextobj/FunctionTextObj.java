@@ -142,6 +142,7 @@ public class FunctionTextObj implements VimExtension {
                 if (elementType.endsWith("METHOD-DECLARATION") // C#
                         || elementType.startsWith("FUNCTION_DECLARATION") // Go, Dart
                         || elementType.endsWith("FUNCTION_DECLARATION") // Javascript, Python, Go
+                        || elementType.endsWith("METHOD_DECLARATION") // Go
                         || elementType.equals("SUB_DEFINITION") // Perl
                         || elementType.equals("RUBY:METHOD") // Ruby
                         || elementType.equals("METHOD") // Java
