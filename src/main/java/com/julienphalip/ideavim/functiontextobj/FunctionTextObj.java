@@ -90,7 +90,7 @@ public class FunctionTextObj implements VimExtension {
                     endOffset = body.getTextRange().getEndOffset();
                     if (usesBraces(body)) {
                         startOffset += 1;
-                        endOffset -= 1;
+                        endOffset -= 2;
                     }
                 }
             }
