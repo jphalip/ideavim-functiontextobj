@@ -51,19 +51,18 @@ val runRiderWithPlugins by intellijPlatformTesting.runIde.registering {
 
 val runIdeaUltimateWithPlugins by intellijPlatformTesting.runIde.registering {
     type = IntelliJPlatformType.IntellijIdeaUltimate
-    version = "2024.2.4"
+    version = "2024.3.5"
     plugins {
-        plugin("org.jetbrains.plugins.go", "242.20224.300")
-        plugin("Pythonid", "242.20224.419")
-        plugin("org.jetbrains.plugins.ruby", "242.20224.419")
-        plugin("com.jetbrains.rust", "242.23726.162")
-        plugin("com.jetbrains.php", "242.20224.427")
-        plugin("org.jetbrains.plugins.ruby", "242.20224.419")
-        plugin("org.intellij.scala", "2024.2.29")
-        plugin("com.perl5", "2024.2.3")
-        plugin("R4Intellij", "242.21829.233")
-        plugin("com.intellij.notebooks.core", "242.21829.3")
-        plugin("Dart", "242.21829.3")
+        plugin("org.jetbrains.plugins.go", "243.26053.27")
+        plugin("Pythonid", "243.26053.27")
+        plugin("org.jetbrains.plugins.ruby", "243.26053.27")
+        plugin("com.jetbrains.rust", "243.26053.17")
+        plugin("com.jetbrains.php", "243.26053.27")
+        plugin("org.intellij.scala", "2024.3.42")
+        plugin("com.perl5", "2024.3.1")
+        plugin("R4Intellij", "243.26053.34")
+        plugin("com.intellij.notebooks.core", "243.24978.74")
+        plugin("Dart", "243.26053.17")
     }
 }
 
