@@ -84,13 +84,16 @@ public class FunctionTextObj implements VimExtension {
             int endOffset = method.getTextRange().getEndOffset();
 
             if (!around) {
+                Mode operationMode = operatorArguments.component3();
+                boolean isVisual = operationMode instanceof Mode.VISUAL;
+
                 PsiElement body = findFunctionBody(method);
                 if (body != null) {
                     startOffset = body.getTextRange().getStartOffset();
                     endOffset = body.getTextRange().getEndOffset();
                     if (usesBraces(body)) {
                         startOffset += 1;
-                        endOffset -= 2;
+                        endOffset -= isVisual ? 1 : 2;
                     }
                 }
             }
