@@ -181,7 +181,7 @@ public class FunctionTextObj implements VimExtension {
                         || elementType.equals("BLOCK OF EXPRESSIONS") // Scala
                         || elementType.equals("BLOCK_STATEMENT") // Typescript, Javascript
                         || elementType.equals("PERL5: BLOCK") // Perl
-                        || elementType.equals("PY:STATEMENT_LIST") // Python
+                        || elementType.equals("PYSTATEMENTLIST") // Python
                         || elementType.equals("BODY STATEMENT") // Ruby
                         || elementType.equals("R_BLOCK_EXPRESSION") // R
                 ) {

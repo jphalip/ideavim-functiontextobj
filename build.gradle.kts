@@ -54,6 +54,7 @@ val runIdeaUltimateWithPlugins by intellijPlatformTesting.runIde.registering {
     version = "2024.3.5"
     plugins {
         plugin("org.jetbrains.plugins.go", "243.26053.27")
+        plugin("PythonCore", "243.24978.46")
         plugin("Pythonid", "243.26053.27")
         plugin("org.jetbrains.plugins.ruby", "243.26053.27")
         plugin("com.jetbrains.rust", "243.26053.17")
