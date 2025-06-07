@@ -95,13 +95,19 @@ public class FunctionTextObj implements VimExtension {
                 }
             }
 
-            // Set selection using editor's selection model
+            // Set the selection range for the text object
             SelectionModel selectionModel = editor.getSelectionModel();
             selectionModel.setSelection(startOffset, endOffset);
-            editor.getCaretModel().moveToOffset(endOffset);
 
-            // Update Vim mode to visual character-wise mode
-            vimEditor.setMode(new Mode.VISUAL(SelectionType.CHARACTER_WISE, new Mode.NORMAL()));
+            if (vimEditor.getMode() instanceof Mode.OP_PENDING) {
+                // Explicitly move the caret to the start of the selection
+                editor.getCaretModel().moveToOffset(startOffset);
+            } else {
+                // For a visual command ('v'), we need to enter visual mode
+                // and place the caret at the end of the selection
+                editor.getCaretModel().moveToOffset(endOffset);
+                vimEditor.setMode(new Mode.VISUAL(SelectionType.CHARACTER_WISE, new Mode.NORMAL()));
+            }
         }
 
         private boolean usesBraces(PsiElement element) {
