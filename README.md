@@ -56,9 +56,11 @@ using the Jetbrains language plugins:
 Don't like the default `f` mapping? You can remap the text objects in your
 `.ideavimrc`:
 
-```
+```vimscript
 " Use 'm' instead
-map im <Plug>InnerFunction
-map am <Plug>OuterFunction
+omap im <Plug>InnerFunction
+omap am <Plug>OuterFunction
+vmap im <Plug>InnerFunction
+vmap am <Plug>OuterFunction
 ```
 <!-- Plugin description end -->
