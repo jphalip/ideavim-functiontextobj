@@ -46,12 +46,12 @@ dependencies {
 // To test C#
 val runRiderWithPlugins by intellijPlatformTesting.runIde.registering {
     type = IntelliJPlatformType.Rider
-    version = "2024.2.7"
+    version = providers.gradleProperty("platformVersion")
 }
 
 val runIdeaUltimateWithPlugins by intellijPlatformTesting.runIde.registering {
     type = IntelliJPlatformType.IntellijIdeaUltimate
-    version = "2024.3.5"
+    version = providers.gradleProperty("platformVersion")
     plugins {
         plugin("org.jetbrains.plugins.go", "243.26053.27")
         plugin("PythonCore", "243.24978.46")
@@ -153,4 +153,7 @@ tasks {
         dependsOn(patchChangelog)
     }
 
+    buildSearchableOptions {
+        enabled = false
+    }
 }

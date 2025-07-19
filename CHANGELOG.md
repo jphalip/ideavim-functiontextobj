@@ -1,3 +1,9 @@
+## 1.1.0
+
+- Fixed 'dif' command.
+- Fixes for Python.
+- Improvements for Go.
+
 ## 1.0.2
 
 * Improvements for PHP.
