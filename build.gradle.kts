@@ -36,7 +36,6 @@ dependencies {
         create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
         bundledPlugins(providers.gradleProperty("platformBundledPlugins").map { it.split(',') })
         plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
-        instrumentationTools()
         pluginVerifier()
         zipSigner()
         testFramework(TestFrameworkType.Platform)
@@ -46,9 +45,15 @@ dependencies {
 // To test C#
 val runRiderWithPlugins by intellijPlatformTesting.runIde.registering {
     type = IntelliJPlatformType.Rider
+}
+
+// To test C and C++
+val runClionWithPlugins by intellijPlatformTesting.runIde.registering {
+    type = IntelliJPlatformType.CLion
     version = providers.gradleProperty("platformVersion")
 }
 
+// To test all other languages
 val runIdeaUltimateWithPlugins by intellijPlatformTesting.runIde.registering {
     type = IntelliJPlatformType.IntellijIdeaUltimate
     version = providers.gradleProperty("platformVersion")

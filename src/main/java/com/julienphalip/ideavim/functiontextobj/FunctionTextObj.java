@@ -156,6 +156,7 @@ public class FunctionTextObj implements VimExtension {
          */
         private boolean usesBraces(PsiElement element) {
             return (element.getLanguage().getID().equalsIgnoreCase("C#")
+                    || element.getLanguage().getID().equalsIgnoreCase("ObjectiveC") // Used by CLion for both C and C++
                     || element.getLanguage().getID().equalsIgnoreCase("Scala")
                     || element.getLanguage().getID().equalsIgnoreCase("Dart")
                     || element.getLanguage().getID().equalsIgnoreCase("Go")
@@ -190,9 +191,9 @@ public class FunctionTextObj implements VimExtension {
                 }
 
                 String elementType = element.getNode().getElementType().toString().toUpperCase();
-
                 // Check for method/function declaration element types across languages
                 if (elementType.endsWith("METHOD-DECLARATION") // C#
+                        || elementType.startsWith("FUNCTION_DEFINITION") // C, C++
                         || elementType.startsWith("FUNCTION_DECLARATION") // Go, Dart
                         || elementType.endsWith("FUNCTION_DECLARATION") // Javascript, Python, Go
                         || elementType.endsWith("METHOD_DECLARATION") // Go
@@ -224,6 +225,7 @@ public class FunctionTextObj implements VimExtension {
             for (PsiElement child : function.getChildren()) {
                 String elementType = child.getNode().getElementType().toString().toUpperCase();
                 if (elementType.equals("CODE_BLOCK") // Java
+                        || elementType.equals("LAZY_BLOCK") // C, C++
                         || elementType.equals("CS:BLOCK-LIST") // C#
                         || elementType.equals("FUNCTION_BODY") // Dart
                         || elementType.equals("BLOCK") // Kotlin, Rust

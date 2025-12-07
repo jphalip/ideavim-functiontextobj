@@ -25,11 +25,12 @@ yaf  - yank (copy) the entire function
 This extension supports function/method selection in the following languages
 using the Jetbrains language plugins:
 
-* [C#](https://www.jetbrains.com/rider/)
+* C# using [Rider](https://www.jetbrains.com/rider/)
+* C and C++ using [CLion](https://www.jetbrains.com/clion/)
 * [Dart](https://plugins.jetbrains.com/plugin/6351-dart)
 * [Go](https://plugins.jetbrains.com/plugin/9568-go)
-* Java: : Already included default in IntelliJ 
-* JavaScript/ECMAScript 6/TypeScript: Already included default in IntelliJ
+* Java: : Already included by default in IntelliJ 
+* JavaScript/ECMAScript 6/TypeScript: Already included by default in IntelliJ
 * [Kotlin](https://plugins.jetbrains.com/plugin/6954-kotlin)
 * [PHP](https://plugins.jetbrains.com/plugin/6610-php)
 * [Perl 5](https://plugins.jetbrains.com/plugin/7796-perl)
