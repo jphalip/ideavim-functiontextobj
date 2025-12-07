@@ -10,13 +10,18 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.maddyhome.idea.vim.KeyHandler;
 import com.maddyhome.idea.vim.api.ExecutionContext;
+import com.maddyhome.idea.vim.api.ImmutableVimCaret;
 import com.maddyhome.idea.vim.api.VimEditor;
 import com.maddyhome.idea.vim.api.VimInjectorKt;
 import com.maddyhome.idea.vim.command.MappingMode;
 import com.maddyhome.idea.vim.command.OperatorArguments;
+import com.maddyhome.idea.vim.command.TextObjectVisualType;
+import com.maddyhome.idea.vim.common.TextRange;
 import com.maddyhome.idea.vim.extension.ExtensionHandler;
 import com.maddyhome.idea.vim.extension.VimExtension;
+import com.maddyhome.idea.vim.handler.TextObjectActionHandler;
 import com.maddyhome.idea.vim.newapi.IjVimEditorKt;
 import com.maddyhome.idea.vim.state.mode.Mode;
 import com.maddyhome.idea.vim.state.mode.SelectionType;
@@ -61,6 +66,30 @@ public class FunctionTextObj implements VimExtension {
                 true);
     }
 
+    static class EntireTextObjectHandler extends TextObjectActionHandler {
+        final int start;
+        final int end;
+
+        EntireTextObjectHandler(int start, int end) {
+            this.start = start;
+            this.end = end;
+        }
+
+        @Override
+        public @Nullable TextRange getRange(@NotNull VimEditor editor,
+                                            @NotNull ImmutableVimCaret caret,
+                                            @NotNull ExecutionContext context,
+                                            int count,
+                                            int rawCount) {
+            return new TextRange(start, end);
+        }
+
+        @Override
+        public @NotNull TextObjectVisualType getVisualType() {
+            return TextObjectVisualType.CHARACTER_WISE;
+        }
+    }
+
     private record FunctionHandler(boolean around) implements ExtensionHandler {
 
         @Override
@@ -96,13 +125,11 @@ public class FunctionTextObj implements VimExtension {
             }
 
             // Set the selection range for the text object
-            SelectionModel selectionModel = editor.getSelectionModel();
-            selectionModel.setSelection(startOffset, endOffset);
-
             if (vimEditor.getMode() instanceof Mode.OP_PENDING) {
-                // Explicitly move the caret to the start of the selection
-                editor.getCaretModel().moveToOffset(startOffset);
+                KeyHandler.getInstance().getKeyHandlerState().getCommandBuilder().addAction(new EntireTextObjectHandler(startOffset, endOffset));
             } else {
+                SelectionModel selectionModel = editor.getSelectionModel();
+                selectionModel.setSelection(startOffset, endOffset);
                 // For a visual command ('v'), we need to enter visual mode
                 // and place the caret at the end of the selection
                 editor.getCaretModel().moveToOffset(endOffset);
