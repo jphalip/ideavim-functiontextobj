@@ -28,6 +28,11 @@ import com.maddyhome.idea.vim.state.mode.SelectionType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * IdeaVim extension that provides text objects for functions/methods.
+ * Supports 'if' (inner function) and 'af' (around/outer function) text objects
+ * across multiple programming languages.
+ */
 public class FunctionTextObj implements VimExtension {
 
     @Override
@@ -66,6 +71,10 @@ public class FunctionTextObj implements VimExtension {
                 true);
     }
 
+    /**
+     * TextObjectActionHandler that returns a fixed text range.
+     * This is the proper IdeaVim API for implementing text objects in operator-pending mode.
+     */
     static class EntireTextObjectHandler extends TextObjectActionHandler {
         final int start;
         final int end;
@@ -98,6 +107,7 @@ public class FunctionTextObj implements VimExtension {
                 @NotNull ExecutionContext context,
                 @NotNull OperatorArguments operatorArguments) {
             Editor editor = IjVimEditorKt.getIj(vimEditor);
+
             if (editor.getProject() == null) return;
             VirtualFile file = FileDocumentManager.getInstance().getFile(editor.getDocument());
             if (file == null) return;
@@ -108,15 +118,17 @@ public class FunctionTextObj implements VimExtension {
             PsiElement method = findFunctionAtCursor(editor, psiFile);
             if (method == null) return;
 
-            // Get the method boundaries
+            // Get the method boundaries (entire method including signature)
             int startOffset = method.getTextRange().getStartOffset();
             int endOffset = method.getTextRange().getEndOffset();
 
+            // For 'if' (inner function), adjust to only include the body content
             if (!around) {
                 PsiElement body = findFunctionBody(method);
                 if (body != null) {
                     startOffset = body.getTextRange().getStartOffset();
                     endOffset = body.getTextRange().getEndOffset();
+                    // For languages with braces, exclude the opening/closing braces
                     if (usesBraces(body)) {
                         startOffset += 1;
                         endOffset -= 1;
@@ -124,19 +136,24 @@ public class FunctionTextObj implements VimExtension {
                 }
             }
 
-            // Set the selection range for the text object
+            // Handle operator-pending mode (yank, delete, change, etc.)
             if (vimEditor.getMode() instanceof Mode.OP_PENDING) {
-                KeyHandler.getInstance().getKeyHandlerState().getCommandBuilder().addAction(new EntireTextObjectHandler(startOffset, endOffset));
+                // Use IdeaVim's proper text object API by adding a TextObjectActionHandler
+                KeyHandler.getInstance().getKeyHandlerState().getCommandBuilder().addAction(
+                    new EntireTextObjectHandler(startOffset, endOffset)
+                );
             } else {
+                // Handle visual mode (vif, vaf)
                 SelectionModel selectionModel = editor.getSelectionModel();
                 selectionModel.setSelection(startOffset, endOffset);
-                // For a visual command ('v'), we need to enter visual mode
-                // and place the caret at the end of the selection
                 editor.getCaretModel().moveToOffset(endOffset);
                 vimEditor.setMode(new Mode.VISUAL(SelectionType.CHARACTER_WISE, new Mode.NORMAL()));
             }
         }
 
+        /**
+         * Check if the function body uses braces (vs indentation-based like Python).
+         */
         private boolean usesBraces(PsiElement element) {
             return (element.getLanguage().getID().equalsIgnoreCase("C#")
                     || element.getLanguage().getID().equalsIgnoreCase("Scala")
@@ -153,6 +170,9 @@ public class FunctionTextObj implements VimExtension {
                     || element.getLanguage().getID().equalsIgnoreCase("ECMAScript 6"));
         }
 
+        /**
+         * Walk up the PSI tree from the cursor position to find the containing function/method.
+         */
         @Nullable
         private PsiElement findFunctionAtCursor(Editor editor, PsiFile psiFile) {
             int offset = editor.getCaretModel().getOffset();
@@ -171,7 +191,7 @@ public class FunctionTextObj implements VimExtension {
 
                 String elementType = element.getNode().getElementType().toString().toUpperCase();
 
-                // Specifically look for method/function declarations
+                // Check for method/function declaration element types across languages
                 if (elementType.endsWith("METHOD-DECLARATION") // C#
                         || elementType.startsWith("FUNCTION_DECLARATION") // Go, Dart
                         || elementType.endsWith("FUNCTION_DECLARATION") // Javascript, Python, Go
@@ -195,6 +215,9 @@ public class FunctionTextObj implements VimExtension {
             return null;
         }
 
+        /**
+         * Find the body of a function (the part inside braces or indented block).
+         */
         @Nullable
         private PsiElement findFunctionBody(PsiElement function) {
             // Try to find the function body among the children
