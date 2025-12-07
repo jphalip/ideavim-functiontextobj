@@ -1,3 +1,8 @@
+## 1.2.0
+
+- Added support for C and C++ via CLion
+- Fixed bug with 'yaf'
+
 ## 1.1.0
 
 - Fixed 'dif' command.
