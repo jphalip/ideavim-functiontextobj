@@ -7,9 +7,9 @@ plugins {
     id("java")
     id("java-test-fixtures")
     kotlin("jvm") version "1.9.23"
-    id("org.jetbrains.intellij.platform") version "2.2.0"
-    id("org.jetbrains.changelog") version "2.2.1"
-    id("com.diffplug.spotless") version "6.25.0"
+    id("org.jetbrains.intellij.platform") version "2.10.5"
+    id("org.jetbrains.changelog") version "2.5.0"
+    id("com.diffplug.spotless") version "8.1.0"
     id("pmd")
 }
 
@@ -53,17 +53,17 @@ val runIdeaUltimateWithPlugins by intellijPlatformTesting.runIde.registering {
     type = IntelliJPlatformType.IntellijIdeaUltimate
     version = providers.gradleProperty("platformVersion")
     plugins {
-        plugin("org.jetbrains.plugins.go", "243.26053.27")
-        plugin("PythonCore", "243.24978.46")
-        plugin("Pythonid", "243.26053.27")
-        plugin("org.jetbrains.plugins.ruby", "243.26053.27")
-        plugin("com.jetbrains.rust", "243.26053.17")
-        plugin("com.jetbrains.php", "243.26053.27")
-        plugin("org.intellij.scala", "2024.3.42")
-        plugin("com.perl5", "2024.3.1")
-        plugin("R4Intellij", "243.26053.34")
-        plugin("com.intellij.notebooks.core", "243.24978.74")
-        plugin("Dart", "243.26053.17")
+        plugin("org.jetbrains.plugins.go", "252.27397.103")
+        plugin("PythonCore", "252.28238.7")
+        plugin("Pythonid", "252.28238.7")
+        plugin("org.jetbrains.plugins.ruby", "252.28238.7")
+        plugin("com.jetbrains.rust", "252.28238.28")
+        plugin("com.jetbrains.php", "252.28238.9")
+        plugin("org.intellij.scala", "2025.2.48")
+        plugin("com.perl5", "2025.2.1")
+        plugin("R4Intellij", "252.28238.33")
+        plugin("com.intellij.notebooks.core", "253.28294.332")
+        plugin("Dart", "500.0.0")
     }
 }
 
