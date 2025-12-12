@@ -6,11 +6,28 @@ import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 plugins {
     id("java")
     id("java-test-fixtures")
-    kotlin("jvm") version "1.9.23"
+    kotlin("jvm") version "2.1.0"
     id("org.jetbrains.intellij.platform") version "2.10.5"
     id("org.jetbrains.changelog") version "2.5.0"
     id("com.diffplug.spotless") version "8.1.0"
     id("pmd")
+}
+
+val ideaVimPluginVersion="2.27.2"
+val goPluginVersion="252.27397.103"
+val pythonCorePluginVersion="252.28238.7"
+val pythonidPluginVersion="252.28238.7"
+val rubyPluginVersion="252.28238.7"
+val rustPluginVersion="252.28238.28"
+val phpPluginVersion="252.28238.9"
+val scalaPluginVersion="2025.2.48"
+val perl5PluginVersion="2025.2.1"
+val r4intellijPluginVersion="252.28238.33"
+val notebooksPluginVersion="253.28294.332"
+val dartPluginVersion="500.0.0"
+
+kotlin {
+    jvmToolchain(21)
 }
 
 changelog {
@@ -31,44 +48,67 @@ repositories {
     }
 }
 
+val platformVersion = providers.gradleProperty("platformVersion")
+
 dependencies {
     intellijPlatform {
-        create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
+        create(providers.gradleProperty("platformType"), platformVersion)
         bundledPlugins(providers.gradleProperty("platformBundledPlugins").map { it.split(',') })
         plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
         pluginVerifier()
         zipSigner()
-        testFramework(TestFrameworkType.Platform)
+        testFramework(TestFrameworkType.Starter)
+    }
+
+    // JUnit 5
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    // JUnit 4
+    testImplementation("junit:junit:4.13.2")
+    // Dependency Injection for Starter configuration
+    testImplementation("org.kodein.di:kodein-di-jvm:7.20.2")
+}
+
+val trustAllProjectsArg = CommandLineArgumentProvider {
+    listOf("-Didea.trust.all.projects=true")
+}
+
+// To test C# manually
+val runRiderWithPlugins by intellijPlatformTesting.runIde.registering {
+    type = IntelliJPlatformType.Rider
+    task {
+        jvmArgumentProviders += trustAllProjectsArg
     }
 }
 
-// To test C#
-val runRiderWithPlugins by intellijPlatformTesting.runIde.registering {
-    type = IntelliJPlatformType.Rider
-}
-
-// To test C and C++
+// To test C and C++ manually
+// Note: Somehow debugging doesn't work with CLion...
 val runClionWithPlugins by intellijPlatformTesting.runIde.registering {
     type = IntelliJPlatformType.CLion
-    version = providers.gradleProperty("platformVersion")
+    version = platformVersion
+    task {
+        jvmArgumentProviders += trustAllProjectsArg
+    }
 }
 
-// To test all other languages
+// To test all other languages manually
 val runIdeaUltimateWithPlugins by intellijPlatformTesting.runIde.registering {
     type = IntelliJPlatformType.IntellijIdeaUltimate
-    version = providers.gradleProperty("platformVersion")
+    version = platformVersion
     plugins {
-        plugin("org.jetbrains.plugins.go", "252.27397.103")
-        plugin("PythonCore", "252.28238.7")
-        plugin("Pythonid", "252.28238.7")
-        plugin("org.jetbrains.plugins.ruby", "252.28238.7")
-        plugin("com.jetbrains.rust", "252.28238.28")
-        plugin("com.jetbrains.php", "252.28238.9")
-        plugin("org.intellij.scala", "2025.2.48")
-        plugin("com.perl5", "2025.2.1")
-        plugin("R4Intellij", "252.28238.33")
-        plugin("com.intellij.notebooks.core", "253.28294.332")
-        plugin("Dart", "500.0.0")
+        plugin("org.jetbrains.plugins.go", goPluginVersion)
+        plugin("PythonCore", pythonCorePluginVersion)
+        plugin("Pythonid", pythonidPluginVersion)
+        plugin("org.jetbrains.plugins.ruby", rubyPluginVersion)
+        plugin("com.jetbrains.rust", rustPluginVersion)
+        plugin("com.jetbrains.php", phpPluginVersion)
+        plugin("org.intellij.scala", scalaPluginVersion)
+        plugin("com.perl5", perl5PluginVersion)
+        plugin("R4Intellij", r4intellijPluginVersion)
+        plugin("com.intellij.notebooks.core", notebooksPluginVersion)
+        plugin("Dart", dartPluginVersion)
+    }
+    task {
+        jvmArgumentProviders += trustAllProjectsArg
     }
 }
 
@@ -124,6 +164,10 @@ spotless {
             .reflowLongStrings()
             .groupArtifact("com.google.googlejavaformat:google-java-format")
     }
+    kotlin {
+        target("src/**/*.kt")
+        ktlint()
+    }
 }
 
 pmd {
@@ -142,9 +186,42 @@ tasks.named<Pmd>("pmdMain") {
 }
 
 tasks {
+    val buildPlugin by existing(Zip::class)
+
     withType<JavaCompile> {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
+        sourceCompatibility = "21"
+        targetCompatibility = "21"
+    }
+
+    val setupTestProject by registering(Copy::class) {
+        from(layout.projectDirectory.dir("src/test/testFiles"))
+        into(layout.projectDirectory.dir("src/test/tmpFiles"))
+    }
+
+    withType<Test> {
+        useJUnitPlatform()
+        dependsOn(setupTestProject)
+        dependsOn(buildPlugin)
+        systemProperty("path.to.build.plugin", buildPlugin.get().archiveFile.get().asFile.absolutePath)
+        systemProperty("platform.version", platformVersion.get())
+        systemProperty("path.to.project", layout.projectDirectory.dir("src/test/tmpFiles").asFile.absolutePath)
+        systemProperty("ideaVimPluginVersion", ideaVimPluginVersion)
+        systemProperty(
+            "intellijUltimatePlugins",
+            listOf(
+                "org.jetbrains.plugins.go:$goPluginVersion",
+                "PythonCore:$pythonCorePluginVersion",
+                "Pythonid:$pythonidPluginVersion",
+                "org.jetbrains.plugins.ruby:$rubyPluginVersion",
+                "com.jetbrains.rust:$rustPluginVersion",
+                "com.jetbrains.php:$phpPluginVersion",
+                "org.intellij.scala:$scalaPluginVersion",
+                "com.perl5:$perl5PluginVersion",
+                "R4Intellij:$r4intellijPluginVersion",
+                "com.intellij.notebooks.core:$notebooksPluginVersion",
+                "Dart:$dartPluginVersion",
+            ).joinToString(","),
+        )
     }
 
     signPlugin {

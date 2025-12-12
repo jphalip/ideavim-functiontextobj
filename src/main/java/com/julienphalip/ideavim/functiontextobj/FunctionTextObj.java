@@ -29,9 +29,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * IdeaVim extension that provides text objects for functions/methods.
- * Supports 'if' (inner function) and 'af' (around/outer function) text objects
- * across multiple programming languages.
+ * IdeaVim extension that provides text objects for functions/methods. Supports 'if' (inner
+ * function) and 'af' (around/outer function) text objects across multiple programming languages.
  */
 public class FunctionTextObj implements VimExtension {
 
@@ -72,8 +71,8 @@ public class FunctionTextObj implements VimExtension {
     }
 
     /**
-     * TextObjectActionHandler that returns a fixed text range.
-     * This is the proper IdeaVim API for implementing text objects in operator-pending mode.
+     * TextObjectActionHandler that returns a fixed text range. This is the proper IdeaVim API for
+     * implementing text objects in operator-pending mode.
      */
     static class EntireTextObjectHandler extends TextObjectActionHandler {
         final int start;
@@ -85,11 +84,12 @@ public class FunctionTextObj implements VimExtension {
         }
 
         @Override
-        public @Nullable TextRange getRange(@NotNull VimEditor editor,
-                                            @NotNull ImmutableVimCaret caret,
-                                            @NotNull ExecutionContext context,
-                                            int count,
-                                            int rawCount) {
+        public @Nullable TextRange getRange(
+                @NotNull VimEditor editor,
+                @NotNull ImmutableVimCaret caret,
+                @NotNull ExecutionContext context,
+                int count,
+                int rawCount) {
             return new TextRange(start, end);
         }
 
@@ -139,9 +139,10 @@ public class FunctionTextObj implements VimExtension {
             // Handle operator-pending mode (yank, delete, change, etc.)
             if (vimEditor.getMode() instanceof Mode.OP_PENDING) {
                 // Use IdeaVim's proper text object API by adding a TextObjectActionHandler
-                KeyHandler.getInstance().getKeyHandlerState().getCommandBuilder().addAction(
-                    new EntireTextObjectHandler(startOffset, endOffset)
-                );
+                KeyHandler.getInstance()
+                        .getKeyHandlerState()
+                        .getCommandBuilder()
+                        .addAction(new EntireTextObjectHandler(startOffset, endOffset));
             } else {
                 // Handle visual mode (vif, vaf)
                 SelectionModel selectionModel = editor.getSelectionModel();
@@ -151,12 +152,12 @@ public class FunctionTextObj implements VimExtension {
             }
         }
 
-        /**
-         * Check if the function body uses braces (vs indentation-based like Python).
-         */
+        /** Check if the function body uses braces (vs indentation-based like Python). */
         private boolean usesBraces(PsiElement element) {
             return (element.getLanguage().getID().equalsIgnoreCase("C#")
-                    || element.getLanguage().getID().equalsIgnoreCase("ObjectiveC") // Used by CLion for both C and C++
+                    || element.getLanguage()
+                            .getID()
+                            .equalsIgnoreCase("ObjectiveC") // Used by CLion for both C and C++
                     || element.getLanguage().getID().equalsIgnoreCase("Scala")
                     || element.getLanguage().getID().equalsIgnoreCase("Dart")
                     || element.getLanguage().getID().equalsIgnoreCase("Go")
@@ -171,9 +172,7 @@ public class FunctionTextObj implements VimExtension {
                     || element.getLanguage().getID().equalsIgnoreCase("ECMAScript 6"));
         }
 
-        /**
-         * Walk up the PSI tree from the cursor position to find the containing function/method.
-         */
+        /** Walk up the PSI tree from the cursor position to find the containing function/method. */
         @Nullable
         private PsiElement findFunctionAtCursor(Editor editor, PsiFile psiFile) {
             int offset = editor.getCaretModel().getOffset();
@@ -216,9 +215,7 @@ public class FunctionTextObj implements VimExtension {
             return null;
         }
 
-        /**
-         * Find the body of a function (the part inside braces or indented block).
-         */
+        /** Find the body of a function (the part inside braces or indented block). */
         @Nullable
         private PsiElement findFunctionBody(PsiElement function) {
             // Try to find the function body among the children

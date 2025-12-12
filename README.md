@@ -65,3 +65,28 @@ vmap im <Plug>InnerFunction
 vmap am <Plug>OuterFunction
 ```
 <!-- Plugin description end -->
+
+## Running the tests
+
+### Manual Testing
+
+You can launch a sandboxed IDE with the plugin installed for manual testing. Use
+the following Gradle tasks:
+
+- **For C#:** Run `runRiderWithPlugins` to open a test project in Rider.
+- **For C/C++:** Run `runClionWithPlugins` to open a test project in CLion.
+- **For all other languages:** Run `runIdeaUltimateWithPlugins` to open a test
+  project in IntelliJ IDEA Ultimate.
+
+### Automated Testing
+
+The automated tests are configured to run against different IDEs:
+
+-   `./gradlew testIntelliJ`: Runs tests against IntelliJ IDEA Ultimate.
+-   `./gradlew testCLion`: Runs tests against CLion.
+-   `./gradlew testRider`: Runs tests against Rider.
+
+The test files used in the automated tests are located in `src/test/testFiles`.
+Before each test run, these files are automatically copied to
+`src/test/tmpFiles`, which serves as a temporary working directory. This ensures
+that the original test files remain unchanged.
