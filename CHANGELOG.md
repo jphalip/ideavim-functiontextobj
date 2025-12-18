@@ -1,7 +1,11 @@
+## 1.2.1
+
+- Fixed issue with Kotlin expression body functions (#11)
+
 ## 1.2.0
 
 - Added support for C and C++ via CLion
-- Fixed bug with 'yaf'
+- Fixed bug with 'yaf' (#9)
 
 ## 1.1.0
 
