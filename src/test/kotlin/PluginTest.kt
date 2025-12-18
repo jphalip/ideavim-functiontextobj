@@ -14,6 +14,7 @@ import com.intellij.ide.starter.models.TestCase
 import com.intellij.ide.starter.plugins.PluginConfigurator
 import com.intellij.ide.starter.project.LocalProjectInfo
 import com.intellij.ide.starter.runner.Starter
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -314,6 +315,7 @@ class PluginTest {
                         ),
                     )
                     testIssue9(driver)
+                    testIssue11(driver)
                 }
             }
     }
@@ -409,6 +411,37 @@ class PluginTest {
                 codeEditor().text.endsWith(
                     "{\n\n    public void method1() {}\n\n    public void method2() {}public void method2() {}\n\n}",
                 ),
+            )
+        }
+    }
+
+    // https://github.com/jphalip/ideavim-functiontextobj/issues/11
+    fun testIssue11(driver: Driver) {
+        driver.openFile("issue11.kts")
+        driver.ideFrame {
+            // Grab focus on the code editor
+            codeEditor().click()
+
+            // Block body function
+            keyboard {
+                escape()
+                typeText("4G")
+                typeText("vif")
+            }
+            assertEquals(
+                "\n    println(\"hello world\")\n",
+                codeEditor().getSelection() ?: "",
+            )
+
+            // Expression body function
+            keyboard {
+                escape()
+                typeText("8G")
+                typeText("vif")
+            }
+            assertEquals(
+                "println(\"bonjour monde\")",
+                codeEditor().getSelection() ?: "",
             )
         }
     }

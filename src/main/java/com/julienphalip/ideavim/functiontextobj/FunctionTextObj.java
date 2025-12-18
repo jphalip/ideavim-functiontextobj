@@ -128,8 +128,9 @@ public class FunctionTextObj implements VimExtension {
                 if (body != null) {
                     startOffset = body.getTextRange().getStartOffset();
                     endOffset = body.getTextRange().getEndOffset();
-                    // For languages with braces, exclude the opening/closing braces
-                    if (usesBraces(body)) {
+                    // For block bodies, exclude the opening/closing braces
+                    String bodyText = body.getText();
+                    if (bodyText.startsWith("{") && bodyText.endsWith("}")) {
                         startOffset += 1;
                         endOffset -= 1;
                     }
@@ -150,26 +151,6 @@ public class FunctionTextObj implements VimExtension {
                 editor.getCaretModel().moveToOffset(endOffset);
                 vimEditor.setMode(new Mode.VISUAL(SelectionType.CHARACTER_WISE, new Mode.NORMAL()));
             }
-        }
-
-        /** Check if the function body uses braces (vs indentation-based like Python). */
-        private boolean usesBraces(PsiElement element) {
-            return (element.getLanguage().getID().equalsIgnoreCase("C#")
-                    || element.getLanguage()
-                            .getID()
-                            .equalsIgnoreCase("ObjectiveC") // Used by CLion for both C and C++
-                    || element.getLanguage().getID().equalsIgnoreCase("Scala")
-                    || element.getLanguage().getID().equalsIgnoreCase("Dart")
-                    || element.getLanguage().getID().equalsIgnoreCase("Go")
-                    || element.getLanguage().getID().equalsIgnoreCase("Java")
-                    || element.getLanguage().getID().equalsIgnoreCase("Kotlin")
-                    || element.getLanguage().getID().equalsIgnoreCase("PHP")
-                    || element.getLanguage().getID().equalsIgnoreCase("Perl5")
-                    || element.getLanguage().getID().equalsIgnoreCase("R")
-                    || element.getLanguage().getID().equalsIgnoreCase("Rust")
-                    || element.getLanguage().getID().equalsIgnoreCase("TypeScript")
-                    || element.getLanguage().getID().equalsIgnoreCase("JavaScript")
-                    || element.getLanguage().getID().equalsIgnoreCase("ECMAScript 6"));
         }
 
         /** Walk up the PSI tree from the cursor position to find the containing function/method. */
@@ -225,7 +206,8 @@ public class FunctionTextObj implements VimExtension {
                         || elementType.equals("LAZY_BLOCK") // C, C++
                         || elementType.equals("CS:BLOCK-LIST") // C#
                         || elementType.equals("FUNCTION_BODY") // Dart
-                        || elementType.equals("BLOCK") // Kotlin, Rust
+                        || elementType.equals("BLOCK") // Rust, Kotlin block body
+                        || elementType.equals("CALL_EXPRESSION") // Kotlin expression body
                         || elementType.equals("GROUP STATEMENT") // PHP
                         || elementType.equals("BLOCK OF EXPRESSIONS") // Scala
                         || elementType.equals("BLOCK_STATEMENT") // Typescript, Javascript
