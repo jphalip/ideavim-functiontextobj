@@ -182,6 +182,10 @@ public class FunctionTextObj implements VimExtension {
                         || elementType.equals("METHOD") // Java
                         || elementType.equals("FUN") // Kotlin
                         || elementType.equals("JS:TYPESCRIPT_FUNCTION") // Typescript
+                        || elementType.equals("JS:FUNCTION_EXPRESSION") // Javascript anonymous function / arrow function
+                        || elementType.equals("JS:TYPESCRIPT_FUNCTION_EXPRESSION") // Typescript anonymous function / arrow function
+                        || elementType.equals("JS:FUNCTION_PROPERTY") // Javascript object function property
+                        || elementType.equals("JS:TYPESCRIPT_FUNCTION_PROPERTY") // Typescript object function property
                         || elementType.endsWith("FUNCTION DEFINITION") // Scala
                         || elementType.endsWith("FUNCTION") // PHP
                         || elementType.equals("CLASS_METHOD") // PHP

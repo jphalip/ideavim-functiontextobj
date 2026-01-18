@@ -217,11 +217,31 @@ class PluginTest {
                     runTextObjectTest(
                         driver,
                         TextObjectTest(
+                            "test-js-arrow.ts",
+                            vif = Pair("\n    if (!Number.isInteger(n))", "return result;\n"),
+                            vaf = Pair("const factorial = n =>", "return result;\n}"),
+                            cif = "const factorial = n => {}",
+                            daf = "// A factorial arrow function\n const factorial = ;",
+                        ),
+                    )
+                    runTextObjectTest(
+                        driver,
+                        TextObjectTest(
                             "test-ts.ts",
                             vif = Pair("\n    if (!Number.isInteger(n))", "return result;\n"),
                             vaf = Pair("function factorial(n: number)", "return result;\n}"),
                             cif = "function factorial(n: number): number {}",
                             daf = "// A factorial function\n",
+                        ),
+                    )
+                    runTextObjectTest(
+                        driver,
+                        TextObjectTest(
+                            "test-ts-arrow.ts",
+                            vif = Pair("\n    if (!Number.isInteger(n))", "return result;\n"),
+                            vaf = Pair("const factorial = (n: number): number =>", "return result;\n}"),
+                            cif = "const factorial = (n: number): number => {}",
+                            daf = "// A factorial arrow function\n const factorial = ;",
                         ),
                     )
                     runTextObjectTest(
